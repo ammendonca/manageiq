@@ -1,0 +1,21 @@
+<div ng-app="ManageIQ" ng-controller="middlewareAddDeploymentController"
+     class="container-fluid container-tiles-pf containers-dashboard miq-dashboard-view"/>
+  <div ng-show="showDeployModal">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Middleware Deployment</h3>
+    </div>
+    <div class="modal-body">
+      Select the file to deploy:
+      <input id="browse-deployment-input" type="file" fileread="binaryFile" ng-model="filePath">
+      <div>
+        <span ng-show="binaryFile">GOT BINARY</span>
+        <span ng-show="fileDescriptor">GOT FILE DESC</span>
+        <span ng-show="filePath">GOT PATH</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" type="button" ng-click="addDeployment()">Deploy</button>
+      <button class="btn btn-warning" type="button" ng-click="showDeployModal = false">Cancel</button>
+    </div>
+  </div>
+</div>

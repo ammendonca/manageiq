@@ -3361,6 +3361,10 @@
       :description: Stop Middleware Server
       :feature_type: admin
       :identifier: middleware_server_stop
+    - :name: Add middleware deployment
+      :description: Add middleware deployment
+      :feature_type: admin
+      :identifier: middleware_deployment_add
 
 # MiddlewareDeployment
 - :name: Middleware Deployment

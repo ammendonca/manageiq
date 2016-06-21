@@ -16,8 +16,41 @@ class MiddlewareServerController < ApplicationController
     :middleware_server_stop   => {:op   => :stop_middleware_server,
                                   :hawk => N_('Not stopping Hawkular server'),
                                   :msg  => N_('Stop initiated for selected server(s)')
+    },
+    :middleware_add_deployment => {:op   => :add_middleware_deployment,
+                                  :hawk => N_('Not deploying to Hawkular server'),
+                                  :msg  => N_('Deployment initiated for selected server(s)')
     }
   }.freeze
+
+  def add_deployment
+    puts "\n\n@@@@@@@@@@@@@@@@@@@@@@@@@ hello add_deployment @@@@@@@@@@@@@@@@@@@@@@@@@@@\n\n"
+    params.each do |paramy|
+      puts "#{paramy} ==> #{params[paramy]}"
+    end
+    selected_servers = identify_selected_servers
+    selected_servers = "3" #hardcoded.. fixme
+
+    puts "selected_servers"
+    puts selected_servers
+
+    puts "OPERATIONS.fetch(:middleware_add_deployment)"
+    puts OPERATIONS.fetch(:middleware_add_deployment)
+
+    data = {
+      "file_data" => params["file"],
+      "file_name" => params["file"].original_filename
+    }
+
+    run_server_operation(OPERATIONS.fetch(:middleware_add_deployment), selected_servers, data, true)
+
+    render :update do |page|
+      page << javascript_prologue
+      page.replace("flash_msg_div", :partial => "layouts/flash_msg")
+    end
+
+    puts "\n\n@@@@@@@@@@@@@@@@@@@@@@@@@ gubye add_deployment @@@@@@@@@@@@@@@@@@@@@@@@@@@\n\n"
+  end
 
   def show
     clear_topology_breadcrumb
@@ -45,8 +78,9 @@ class MiddlewareServerController < ApplicationController
 
     if OPERATIONS.key?(selected_operation)
       selected_servers = identify_selected_servers
-
-      run_server_operation(OPERATIONS.fetch(selected_operation), selected_servers)
+      puts "SEL SERVER"
+      puts selected_servers
+      run_server_operation(OPERATIONS.fetch(selected_operation), selected_servers, nil, false)
 
       render :update do |page|
         page << javascript_prologue
@@ -69,7 +103,7 @@ class MiddlewareServerController < ApplicationController
     params[:id]
   end
 
-  def run_server_operation(operation_info, items)
+  def run_server_operation(operation_info, items, data, force)
     if items.nil?
       add_flash(_("No servers selected"))
       return
@@ -78,20 +112,26 @@ class MiddlewareServerController < ApplicationController
     operation_triggered = false
     items.split(/,/).each do |item|
       mw_server = identify_record item
-      if mw_server.product == 'Hawkular'
+      if !force && mw_server.product == 'Hawkular'
         add_flash(operation_info.fetch(:hawk))
       else
-        trigger_mw_operation operation_info.fetch(:op), mw_server
+        trigger_mw_operation operation_info.fetch(:op), mw_server, data
         operation_triggered = true
       end
     end
     add_flash(operation_info.fetch(:msg)) if operation_triggered
   end
 
-  def trigger_mw_operation(operation, mw_server)
+  def trigger_mw_operation(operation, mw_server, data)
+    puts "triggering mw op[#{operation}] @ mw_server[#{mw_server.to_s}]"
     mw_manager = mw_server.ext_management_system
+    puts "mw manager"
+    puts mw_manager
 
     op = mw_manager.public_method operation
-    op.call mw_server.ems_ref
+    puts "op"
+    puts op
+
+    op.call(mw_server.ems_ref,data)
   end
 end

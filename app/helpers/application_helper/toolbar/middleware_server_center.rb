@@ -53,6 +53,13 @@ class ApplicationHelper::Toolbar::MiddlewareServerCenter < ApplicationHelper::To
           N_('Stop Server'),
           :image   => "guest_shutdown",
           :confirm => N_("Do you want to stop this server?")),
+        button(
+          :middleware_deployment_add,
+          'pficon pficon-add-circle-o fa-lg',
+          N_('Add a new #{ui_lookup(:table=>"middleware_deployment")}'),
+          N_('Add Deployment'),
+          :data => {'function' => 'miqCallAngular', 'function-data' => '{ "name": "showListener", "args": [] }'}),
+
       ]
     ),
   ])

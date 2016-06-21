@@ -125,6 +125,36 @@ module ManageIQ::Providers
       run_generic_operation(:Redeploy, ems_ref)
     end
 
+    def add_middleware_deployment(ems_ref, hash)
+      puts "@ mw manager, adding mw deployment"
+      client = operations_connect
+
+      puts "client"
+      puts client
+
+      puts "file name [#{hash}]"
+
+      the_operation = {
+        :binary_content => hash["file_data"],
+        :destination_file_name => hash["file_name"],
+        :resourcePath  => ems_ref.to_s
+      }
+
+      actual_data = {}
+      client.add_deployment(the_operation) do |on|
+        on.success do |data|
+          _log.debug "Success on websocket-operation #{data}"
+          actual_data[:data] = data
+        end
+        on.failure do |error|
+          actual_data[:data]  = {}
+          actual_data[:error] = error
+          _log.error 'error callback was called, reason: ' + error.to_s
+        end
+      end
+
+    end
+
     def self.raw_alerts_connect(hostname, port, username, password)
       require 'hawkular_all'
       url         = URI::HTTP.build(:host => hostname, :port => port.to_i, :path => '/hawkular/alerts').to_s
